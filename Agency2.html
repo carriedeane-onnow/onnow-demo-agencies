@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnNow - Agency Mobile App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-container {
+            width: 390px;
+            max-width: 100%;
+            background: #1a1a1a;
+            border-radius: 50px;
+            padding: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .phone-screen {
+            background: white;
+            border-radius: 40px;
+            overflow: hidden;
+            height: 844px;
+            position: relative;
+        }
+        
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 30px;
+            background: #1a1a1a;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            z-index: 9;
+        }
+        
+        .screen-content {
+            height: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #5B47D8 0%, #00aeef 100%);
+            color: white;
+            padding: 50px 20px 24px;
+        }
+        
+        .header-sm {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+        
+        .header-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        
+        .header-subtitle {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: rgba(255,255,255,0.2);
+            padding: 14px 10px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .btn-add {
+            background: #5B47D8;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* AI Alert Box */
+        .ai-alert-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .ai-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.25);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .ai-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* Session Card */
+        .session-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+        
+        .session-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .session-type {
+            font-size: 13px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .status-open {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-closed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .session-details {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+        
+        .session-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-small {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-primary-small {
+            background: #5B47D8;
+            color: white;
+        }
+        
+        .btn-secondary-small {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        /* Map Preview */
+        .map-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        
+        .map-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .map-text {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        
+        .map-subtext {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        
+        .filter-chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0;
+            margin-bottom: 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .filter-chip {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        
+        .filter-chip.active {
+            background: #5B47D8;
+            color: white;
+        }
+        
+        /* Gap Alert within Map */
+        .gap-alert {
+            background: rgba(255,255,255,0.2);
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 16px;
+        }
+        
+        .gap-alert-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        
+        .gap-alert-text {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        /* Service Item (for nearby services) */
+        .service-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+        
+        .service-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #2c3e50;
+        }
+        
+        .service-distance {
+            font-size: 12px;
+            color: #999;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        
+        .service-type {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .service-info {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        
+        .service-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* AI Insight Cards */
+        .insight-card {
+            border-left: 4px solid;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .insight-card.gap {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .insight-card.duplication {
+            border-color: #ffc107;
+            background: #fffef5;
+        }
+        
+        .insight-card.collaboration {
+            border-color: #00aeef;
+            background: #f5fcff;
+        }
+        
+        .insight-card.suggestion {
+            border-color: #5B47D8;
+            background: #f8f7ff;
+        }
+        
+        .insight-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .insight-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .insight-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        
+        .insight-details {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            padding-left: 12px;
+            border-left: 2px solid #e0e0e0;
+            margin-top: 8px;
+        }
+        
+        /* Collaboration Card */
+        .collab-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .collab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .collab-type {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .collab-type.offer {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .collab-type.request {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .collab-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        
+        .collab-from {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+        
+        .collab-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        
+        .ai-match-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        
+        /* Alert Item */
+        .alert-item {
+            border-left: 4px solid;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+        }
+        
+        .alert-item.ai {
+            border-color: #667eea;
+            background: #f8f7ff;
+        }
+        
+        .alert-item.issue {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .alert-item.change {
+            border-color: #ffc107;
+            background: #fffef5;
+        }
+        
+        .alert-item.notice {
+            border-color: #00aeef;
+            background: #f5fcff;
+        }
+        
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+        
+        .alert-type {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .alert-type.ai {
+            background: #667eea;
+            color: white;
+        }
+        
+        .alert-type.issue {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .alert-type.change {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .alert-type.notice {
+            background: #00aeef;
+            color: white;
+        }
+        
+        .alert-time {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .alert-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: #5B47D8;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        /* Service Record Elements */
+        .tally-counter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .tally-btn {
+            width: 56px;
+            height: 56px;
+            background: #5B47D8;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+        }
+        
+        .tally-display {
+            text-align: center;
+        }
+        
+        .tally-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #5B47D8;
+            line-height: 1;
+        }
+        
+        .tally-label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .photo-upload {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .upload-text {
+            font-size: 15px;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .upload-subtext {
+            font-size: 13px;
+            color: #999;
+        }
+        
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .photo-item {
+            aspect-ratio: 1;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+        
+        .summary-box {
+            background: linear-gradient(135deg, #5B47D8 0%, #00aeef 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .summary-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .summary-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .summary-stat:last-child {
+            border-bottom: none;
+        }
+        
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 4px;
+            background: #f0f0f0;
+            border-radius: 12px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        .tab-btn.active {
+            background: white;
+            color: #5B47D8;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            padding: 8px 0 24px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .nav-item {
+            text-align: center;
+            padding: 6px;
+            cursor: pointer;
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .nav-item.active .nav-label {
+            color: #5B47D8;
+            font-weight: 600;
+        }
+        
+        .has-bottom-nav {
+            padding-bottom: 90px;
+        }
+        
+        @media (min-width: 768px) {
+            .phone-container {
+                transform: scale(0.9);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="phone-screen">
+            <div class="notch"></div>
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>📶 📡 🔋</span>
+            </div>
+            
+            <!-- SCREEN 1: DASHBOARD -->
+            <div class="screen active" id="screen-dashboard">
+                <div class="screen-content has-bottom-nav">
+                    <div class="header">
+                        <div class="header-sm">Welcome back,</div>
+                        <div class="header-title">St Vincent's Homeless Health</div>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-value">4</div>
+                                <div class="stat-label">Today</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">12</div>
+                                <div class="stat-label">This Week</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">5</div>
+                                <div class="stat-label">Opportunities</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="ai-alert-box">
+                            <div class="ai-badge">AI COLLABORATION OPPORTUNITY</div>
+                            <div class="ai-text">
+                                Mission Australia also operates at Central Hub on Mondays. Consider coordinating to reduce duplication or extend service hours.
+                            </div>
+                        </div>
+                        
+                        <div class="panel">
+                            <div class="panel-title">Today's Sessions</div>
+                            
+                            <div class="session-card">
+                                <div class="session-header">
+                                    <div>
+                                        <div class="session-name">Central Health Hub</div>
+                                        <div class="session-type">Mobile Health Service</div>
+                                    </div>
+                                    <div class="status-badge status-open">Open</div>
+                                </div>
+                                <div class="session-details">
+                                    🕐 12:00 PM - 2:00 PM<br>
+                                    📍 Belmore Park, Central Station
+                                </div>
+                                <div class="session-actions">
+                                    <button class="btn-small btn-primary-small">Update Status</button>
+                                    <button class="btn-small btn-secondary-small">View Details</button>
+                                </div>
+                            </div>
+                            
+                            <div class="session-card">
+                                <div class="session-header">
+                                    <div>
+                                        <div class="session-name">Darlinghurst Health Hub</div>
+                                        <div class="session-type">Mobile Health Service</div>
+                                    </div>
+                                    <div class="status-badge status-open">Open</div>
+                                </div>
+                                <div class="session-details">
+                                    🕐 10:30 AM - 12:30 PM<br>
+                                    📍 Green Park, Darlinghurst
+                                </div>
+                                <div class="session-actions">
+                                    <button class="btn-small btn-primary-small">Update Status</button>
+                                    <button class="btn-small btn-secondary-small">View Details</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SCREEN 2: MY SESSIONS -->
+            <div class="screen" id="screen-sessions">
+                <div class="screen-content has-bottom-nav">
+                    <div class="header">
+                        <div class="header-title">My Sessions</div>
+                        <div class="header-subtitle">Manage all your service delivery sessions</div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="filter-chips">
+                            <button class="filter-chip active">All</button>
+                            <button class="filter-chip">Today</button>
+                            <button class="filter-chip">This Week</button>
+                        </div>
+                        
+                        <div class="session-card">
+                            <div class="session-header">
+                                <div>
+                                    <div class="session-name">Central Health Hub</div>
+                                    <div class="session-type">Mobile Health Service</div>
+                                </div>
+                                <div class="status-badge status-open">Open</div>
+                            </div>
+                            <div class="session-details">
+                                📅 Every Monday<br>
+                                🕐 12:00 PM - 2:00 PM<br>
+                                📍 Belmore Park, Central Station<br>
+                                👥 Capacity: 15-20 clients
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn-small btn-secondary-small">✏️ Edit</button>
+                                <button class="btn-small btn-secondary-small">🚫 Close</button>
+                                <button class="btn-small btn-secondary-small">📍 Relocate</button>
+                            </div>
+                        </div>
+                        
+                        <div class="session-card">
+                            <div class="session-header">
+                                <div>
+                                    <div class="session-name">Darlinghurst Health Hub</div>
+                                    <div class="session-type">Mobile Health Service</div>
+                                </div>
+                                <div class="status-badge status-open">Open</div>
+                            </div>
+                            <div class="session-details">
+                                📅 Every Thursday<br>
+                                🕐 10:30 AM - 12:30 PM<br>
+                                📍 Green Park, Darlinghurst Road<br>
+                                👥 Capacity: 10-15 clients
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn-small btn-secondary-small">✏️ Edit</button>
+                                <button class="btn-small btn-secondary-small">🚫 Close</button>
+                                <button class="btn-small btn-secondary-small">📍 Relocate</button>
+                            </div>
+                        </div>
+                        
+                        <div class="session-card">
+                            <div class="session-header">
+                                <div>
+                                    <div class="session-name">WISH Hub Outreach</div>
+                                    <div class="session-type">Drug Health Support</div>
+                                </div>
+                                <div class="status-badge status-open">Open</div>
+                            </div>
+                            <div class="session-details">
+                                📅 Every Wednesday<br>
+                                🕐 11:00 AM - 3:00 PM<br>
+                                📍 Wayside Chapel, Kings Cross<br>
+                                👥 Capacity: 20-30 clients
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn-small btn-secondary-small">✏️ Edit</button>
+                                <button class="btn-small btn-secondary-small">🚫 Close</button>
+                                <button class="btn-small btn-secondary-small">📍 Relocate</button>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-primary">+ Add New Session</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SCREEN 3: LIVE MAP -->
+            <div class="screen" id="screen-map">
+                <div class="screen-content has-bottom-nav">
+                    <div class="header">
+                        <div class="header-title">Live Service Map</div>
+                        <div class="header-subtitle">Services operating now in your area</div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="map-container">
+                            <div class="map-icon">🗺️</div>
+                            <div class="map-text">Interactive Heat Map</div>
+                            <div class="map-subtext">8 services operating now</div>
+                            
+                            <div class="gap-alert">
+                                <div class="gap-alert-title">AI GAP DETECTED</div>
+                                <div class="gap-alert-text">No food services operating in Redfern today. Consider expanding service area.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-chips">
+                            <button class="filter-chip active">All Services</button>
+                            <button class="filter-chip">Food</button>
+                            <button class="filter-chip">Health</button>
+                            <button class="filter-chip">Housing</button>
+                            <button class="filter-chip">Clothing</button>
+                        </div>
+                        
+                        <div class="panel">
+                            <div class="panel-title">Services Operating Now (8)</div>
+                            
+                            <div class="service-item">
+                                <div class="service-header">
+                                    <div>
+                                        <div class="service-name">Mission Australia</div>
+                                        <div class="service-type">Case Management - Central Hub</div>
+                                    </div>
+                                    <div class="service-distance">0.2km</div>
+                                </div>
+                                <div class="service-info">
+                                    🕐 12:00 PM - 2:00 PM<br>
+                                    📍 Central Health Hub
+                                </div>
+                            </div>
+                            
+                            <div class="service-item">
+                                <div class="service-header">
+                                    <div>
+                                        <div class="service-name">OzHarvest</div>
+                                        <div class="service-type">Food Distribution - Waterloo Hub</div>
+                                    </div>
+                                    <div class="service-distance">0.8km</div>
+                                </div>
+                                <div class="service-info">
+                                    🕐 10:00 AM - 12:00 PM<br>
+                                    📍 Waterloo Community Centre
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SCREEN 4: AI INSIGHTS -->
+            <div class="screen" id="screen-insights">
+                <div class="screen-content has-bottom-nav">
+                    <div class="header">
+                        <div class="header-title">AI Insights & Gaps</div>
+                        <div class="header-subtitle">Smart recommendations for your services</div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="insight-card gap">
+                            <div class="insight-icon">⚠️</div>
+                            <div class="insight-title">Service Gap Detected</div>
+                            <div class="insight-text">
+                                No clothing services detected in Waterloo this week. There may be unmet community need in this area.
+                            </div>
+                            <button class="btn-small btn-primary-small" style="width: 100%;">Investigate Gap</button>
+                        </div>
+                        
+                        <div class="insight-card duplication">
+                            <div class="insight-icon">⚡</div>
+                            <div class="insight-title">Duplication Alert</div>
+                            <div class="insight-text">
+                                3 agencies offering Community Lunch within 200m on Thursdays at Central Station. Consider coordinating times or locations.
+                            </div>
+                            <div class="insight-details">
+                                • Your service: 12:00 PM - 2:00 PM<br>
+                                • Vinnies: 11:30 AM - 1:30 PM<br>
+                                • Salvation Army: 12:30 PM - 2:00 PM
+                            </div>
+                            <button class="btn-small btn-primary-small" style="width: 100%; margin-top: 12px;">Coordinate Times</button>
+                        </div>
+                        
+                        <div class="insight-card collaboration">
+                            <div class="insight-icon">🤝</div>
+                            <div class="insight-title">Collaboration Opportunity</div>
+                            <div class="insight-text">
+                                Mission Australia also serves Central Hub location on Mondays. Connect to coordinate services or extend operating hours together.
+                            </div>
+                            <div class="session-actions" style="margin-top: 12px;">
+                                <button class="btn-small btn-primary-small">Contact Agency</button>
+                                <button class="btn-small btn-secondary-small">View Schedule</button>
+                            </div>
+                        </div>
+                        
+                        <div class="insight-card suggestion">
+                            <div class="insight-icon">💡</div>
+                            <div class="insight-title">Expansion Suggestion</div>
+                            <div class="insight-text">
+                                Redfern area shows high demand for mental health services but only 2 providers operating weekly. Consider expanding your counselling service here.
+                            </div>
+                            <button class="btn-small btn-primary-small" style="width: 100%;">Explore Expansion</button>
+                        </div>
+                        
+                        <div class="insight-card suggestion">
+                            <div class="insight-icon">📊</div>
+                            <div class="insight-title">Underserved Hours</div>
+                            <div class="insight-text">
+                                Weekend services are significantly lower than weekday across all categories. Only 4 agencies operating on Sundays in the entire LGA.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SCREEN 5: COLLABORATION BOARD -->
+            <div class="screen" id="screen-collab">
+                <div class="screen-content has-bottom-nav">
+                    <div class="header">
+                        <div class="header-title">Collaboration Board</div>
+                        <div class="header-subtitle">Connect with other agencies</div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="filter-chips">
+                            <button class="filter-chip active">All</button>
+                            <button class="filter-chip">Offers</button>
+                            <button class="filter-chip">Requests</button>
+                        </div>
+                        
+                        <div class="ai-match-banner">
+                            <strong>🤖 AI Match Suggested:</strong> 4 Voices requested counselling support - you offer this service. Consider responding below.
+                        </div>
+                        
+                        <div class="collab-card">
+                            <div class="collab-header">
+                                <div style="flex: 1;">
+                                    <div class="collab-title">Spare Blankets Available</div>
+                                    <div class="collab-from">Posted by St Vincent's Homeless Health • 2 hours ago</div>
+                                </div>
+                                <div class="collab-type offer">OFFER</div>
+                            </div>
+                            <div class="collab-text">
+                                We have 20 spare blankets at Central Health Hub today. Available for pickup or can coordinate delivery to your service location.
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn-small btn-primary-small">Request Items</button>
+                                <button class="btn-small btn-secondary-small">Contact Agency</button>
+                            </div>
+                        </div>
+                        
+                        <div class="collab-card">
+                            <div class="collab-header">
+                                <div style="flex: 1;">
+                                    <div class="collab-title">Need Counselling Support</div>
+                                    <div class="collab-from">Posted by 4 Voices • 5 hours ago • 2 responses</div>
+                                </div>
+                                <div class="collab-type request">REQUEST</div>
+                            </div>
+                            <div class="collab-text">
+                                Looking for mental health counsellors to join our Thursday hub at Newtown. We have space and clients who need support.
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn-small btn-primary-small">Respond</button>
+                                <button class="btn-small btn-secondary-small">View Details</button>
+                            </div>
+                        </div>
+                        
+                        <div class="collab-card">
+                            <div class="collab-header">
+                                <div style="flex: 1;">
+                                    <div class="collab-title">Excess Food Supplies</div>
+                                    <div class="collab-from">Posted by OzHarvest • 1 hour ago</div>
+                                </div>
+                                <div class="collab-type offer">OFFER</div>
+                            </div>
+                            <div class="collab-text">
+                                OzHarvest has excess prepared meals today (50+ portions). Must be collected by 3pm from Waterloo Hub.
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn-small btn-primary-small">Collect</button>
+                                <button class="btn-small btn-secondary-small">Contact</button>
+                            </div>
+                        </div>
+                        
+                        <div class="collab-card">
+                            <div class="collab-header">
+                                <div style="flex: 1;">
+                                    <div class="collab-title">Volunteer Support Needed</div>
+                                    <div class="collab-from">Posted by Vinnies NSW • Yesterday</div>
+                                </div>
+                                <div class="collab-type request">REQUEST</div>
+                            </div>
+                            <div class="collab-text">
+                                Seeking 2-3 volunteers for our Friday clothing distribution at Redfern Hub. 2-4pm.
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn-small btn-primary-small">Offer Help</button>
+                                <button class="btn-small btn-secondary-small">Details</button>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-primary">+ Post New Request/Offer</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SCREEN 6: NEARBY SERVICES -->
+            <div class="screen" id="screen-nearby">
+                <div class="screen-content has-bottom-nav">
+                    <div class="header">
+                        <div class="header-title">Nearby Services</div>
+                        <div class="header-subtitle">Within 2km of your current location</div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="filter-chips">
+                            <button class="filter-chip active">All</button>
+                            <button class="filter-chip">Today</button>
+                            <button class="filter-chip">Food</button>
+                            <button class="filter-chip">Health</button>
+                            <button class="filter-chip">Housing</button>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="service-header">
+                                <div>
+                                    <div class="service-name">Mission Australia</div>
+                                    <div class="service-type">Case Management & Housing Support</div>
+                                </div>
+                                <div class="service-distance">0.2km</div>
+                            </div>
+                            <div class="service-info">
+                                📍 Central Health Hub<br>
+                                🕐 Operating now until 2:00 PM<br>
+                                📞 (02) 8234 5678
+                            </div>
+                            <div class="service-actions">
+                                <button class="btn-small btn-primary-small">Refer Client</button>
+                                <button class="btn-small btn-secondary-small">Contact</button>
+                                <button class="btn-small btn-secondary-small">Schedule</button>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="service-header">
+                                <div>
+                                    <div class="service-name">OzHarvest</div>
+                                    <div class="service-type">Food Distribution & Meals</div>
+                                </div>
+                                <div class="service-distance">0.8km</div>
+                            </div>
+                            <div class="service-info">
+                                📍 Waterloo Hub<br>
+                                🕐 Closed • Opens tomorrow 10:00 AM<br>
+                                📞 (02) 8234 1234
+                            </div>
+                            <div class="service-actions">
+                                <button class="btn-small btn-primary-small">Refer Client</button>
+                                <button class="btn-small btn-secondary-small">Contact</button>
+                                <button class="btn-small btn-secondary-small">Schedule</button>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="service-header">
+                                <div>
+                                    <div class="service-name">Legal Aid NSW</div>
+                                    <div class="service-type">Legal Advice & Assistance</div>
+                                </div>
+                                <div class="service-distance">1.2km</div>
+                            </div>
+                            <div class="service-info">
+                                📍 Redfern Legal Centre<br>
+                                🕐 Operating now until 4:00 PM<br>
+                                📞 (02) 8234 9876
+                            </div>
+                            <div class="service-actions">
+                                <button class="btn-small btn-primary-small">Refer Client</button>
+                                <button class="btn-small btn-secondary-small">Contact</button>
+                                <button class="btn-small btn-secondary-small">Schedule</button>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item">
+                            <div class="service-header">
+                                <div>
+                                    <div class="service-name">Salvation Army</div>
+                                    <div class="service-type">Clothing, Food & Financial Support</div>
+                                </div>
+                                <div class="service-distance">1.5km</div>
+                            </div>
+                            <div class="service-info">
+                                📍 Darlinghurst Hub<br>
+                                🕐 Operating now until 3:00 PM<br>
+                                📞 (02) 8234 5555
+                            </div>
+                            <div class="service-actions">
+                                <button class="btn-small btn-primary-small">Refer Client</button>
+                                <button class="btn-small btn-secondary-small">Contact</button>
+                                <button class="btn-small btn-secondary-small">Schedule</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SCREEN 7: ALERTS -->
+            <div class="screen" id="screen-alerts">
+                <div class="screen-content has-bottom-nav">
+                    <div class="header">
+                        <div class="header-title">Alerts & Notifications</div>
+                        <div class="header-subtitle">Stay informed about service changes</div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="filter-chips">
+                            <button class="filter-chip active">All</button>
+                            <button class="filter-chip">Site Issues</button>
+                            <button class="filter-chip">Changes</button>
+                            <button class="filter-chip">AI Alerts</button>
+                        </div>
+                        
+                        <div class="alert-item ai">
+                            <div class="alert-header">
+                                <div class="alert-type ai">AI Alert</div>
+                                <div class="alert-time">2 hours ago</div>
+                            </div>
+                            <div class="alert-text">
+                                Duplication detected: Your Thursday lunch program overlaps with 2 other services within 200m. Consider coordinating.
+                            </div>
+                        </div>
+                        
+                        <div class="alert-item issue">
+                            <div class="alert-header">
+                                <div class="alert-type issue">Site Issue</div>
+                                <div class="alert-time">3 hours ago</div>
+                            </div>
+                            <div class="alert-text">
+                                Belmore Park - Excessive waste reported at Central Health Hub location. Council has been notified and cleanup scheduled for tomorrow 8am.
+                            </div>
+                        </div>
+                        
+                        <div class="alert-item change">
+                            <div class="alert-header">
+                                <div class="alert-type change">Service Change</div>
+                                <div class="alert-time">5 hours ago</div>
+                            </div>
+                            <div class="alert-text">
+                                Mission Australia has relocated their Monday session from Central Hub to Waterloo Hub due to park maintenance.
+                            </div>
+                        </div>
+                        
+                        <div class="alert-item notice">
+                            <div class="alert-header">
+                                <div class="alert-type notice">Council Notice</div>
+                                <div class="alert-time">Yesterday</div>
+                            </div>
+                            <div class="alert-text">
+                                Green Park will be closed for maintenance Dec 15-17. Agencies operating at Darlinghurst Health Hub should relocate during this period.
+                            </div>
+                        </div>
+                        
+                        <div class="alert-item change">
+                            <div class="alert-header">
+                                <div class="alert-type change">Service Change</div>
+                                <div class="alert-time">Yesterday</div>
+                            </div>
+                            <div class="alert-text">
+                                OzHarvest cancelled Wednesday food distribution at Waterloo Hub. Agencies can coordinate alternative food support via Collaboration Board.
+                            </div>
+                        </div>
+                        
+                        <div class="alert-item ai">
+                            <div class="alert-header">
+                                <div class="alert-type ai">AI Alert</div>
+                                <div class="alert-time">2 days ago</div>
+                            </div>
+                            <div class="alert-text">
+                                Service gap detected: No health services operating in Redfern area on Fridays. High opportunity for expansion.
+                            </div>
+                        </div>
+                        
+                        <div class="alert-item issue">
+                            <div class="alert-header">
+                                <div class="alert-type issue">Site Issue</div>
+                                <div class="alert-time">3 days ago</div>
+                            </div>
+                            <div class="alert-text">
+                                Safety concern at Kings Cross WISH Hub - increased crowd size reported. Additional security measures implemented.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SCREEN 8: SERVICE RECORD -->
+            <div class="screen" id="screen-record">
+                <div class="screen-content has-bottom-nav">
+                    <div class="header">
+                        <div class="header-title">Service Record</div>
+                        <div class="header-subtitle">Document today's service delivery</div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="panel">
+                            <div class="form-group">
+                                <label class="form-label">Select Session</label>
+                                <select class="form-select">
+                                    <option>Central Health Hub</option>
+                                    <option>Darlinghurst Health Hub</option>
+                                    <option>WISH Hub Outreach</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Date</label>
+                                <input type="date" class="form-input" value="2025-12-17">
+                            </div>
+                        </div>
+                        
+                        <div class="panel">
+                            <div class="panel-title">Client Count</div>
+                            <div class="tally-counter">
+                                <button class="tally-btn">−</button>
+                                <div class="tally-display">
+                                    <div class="tally-number">17</div>
+                                    <div class="tally-label">Clients Served</div>
+                                </div>
+                                <button class="tally-btn">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="panel">
+                            <div class="panel-title">Photos</div>
+                            <div class="photo-upload">
+                                <div class="upload-icon">📷</div>
+                                <div class="upload-text">Add Photos</div>
+                                <div class="upload-subtext">Document your service delivery</div>
+                            </div>
+                            
+                            <div class="photo-grid">
+                                <div class="photo-item">🏥</div>
+                                <div class="photo-item">👥</div>
+                                <div class="photo-item">📋</div>
+                            </div>
+                        </div>
+                        
+                        <div class="panel">
+                            <div class="panel-title">Service Notes</div>
+                            <textarea class="form-textarea" placeholder="Any observations, highlights, or issues to note...">Steady client flow. 3 new clients registered. One client required urgent referral to Mental Health Crisis Team - successfully connected.</textarea>
+                        </div>
+                        
+                        <div class="summary-box">
+                            <div class="summary-title">This Quarter's Impact</div>
+                            <div class="summary-stat">
+                                <div>Total Clients Served</div>
+                                <div>1,847</div>
+                            </div>
+                            <div class="summary-stat">
+                                <div>Sessions Delivered</div>
+                                <div>48</div>
+                            </div>
+                            <div class="summary-stat">
+                                <div>Average Attendance</div>
+                                <div>38 clients</div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-primary">Save Service Record</button>
+                        <button class="btn-secondary">Export for Grant Report</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- BOTTOM NAVIGATION -->
+            <div class="bottom-nav">
+                <div class="nav-item active" onclick="showScreen('screen-dashboard')">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Home</div>
+                </div>
+                <div class="nav-item" onclick="showScreen('screen-sessions')">
+                    <div class="nav-icon">📅</div>
+                    <div class="nav-label">Sessions</div>
+                </div>
+                <div class="nav-item" onclick="showScreen('screen-map')">
+                    <div class="nav-icon">🗺️</div>
+                    <div class="nav-label">Map</div>
+                </div>
+                <div class="nav-item" onclick="showScreen('screen-insights')">
+                    <div class="nav-icon">🤖</div>
+                    <div class="nav-label">AI Insights</div>
+                </div>
+                <div class="nav-item" onclick="showScreen('screen-collab')">
+                    <div class="nav-icon">💬</div>
+                    <div class="nav-label">Board</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            document.getElementById(screenId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const screens = ['screen-dashboard', 'screen-sessions', 'screen-map', 'screen-insights', 'screen-collab'];
+            const index = screens.indexOf(screenId);
+            if (index !== -1) {
+                document.querySelectorAll('.nav-item')[index].classList.add('active');
+            }
+            
+            document.querySelector(`#${screenId} .screen-content`).scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
