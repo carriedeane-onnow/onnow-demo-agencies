@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NNC - Service Network Map</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2D5A4F;
+            --primary-light: #4A8B7A;
+            --accent: #E8934C;
+            --accent-light: #F5B376;
+            --background: #F9F7F4;
+            --surface: #FFFFFF;
+            --text: #1A1A1A;
+            --text-secondary: #666666;
+            --border: #E0DDD8;
+            --success: #5FA876;
+            --info: #6B9AC4;
+            --purple: #9B7EBD;
+            --red: #D4596A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #000;
+            color: var(--text);
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screen-container {
+            width: 66.67vh;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 150vw;
+            background: var(--background);
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+            line-height: 1.2;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .filters-section {
+            padding: 1.25rem 1.5rem;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .filter-title {
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 0.85rem;
+        }
+
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filter-chip {
+            background: var(--background);
+            border: 2px solid var(--border);
+            padding: 0.45rem 0.9rem;
+            border-radius: 18px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .filter-chip:hover {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .filter-chip.housing { border-color: var(--info); }
+        .filter-chip.housing.active { background: var(--info); border-color: var(--info); }
+        .filter-chip.health { border-color: var(--red); }
+        .filter-chip.health.active { background: var(--red); border-color: var(--red); }
+        .filter-chip.legal { border-color: var(--purple); }
+        .filter-chip.legal.active { background: var(--purple); border-color: var(--purple); }
+        .filter-chip.family { border-color: var(--accent); }
+        .filter-chip.family.active { background: var(--accent); border-color: var(--accent); }
+        .filter-chip.aged { border-color: var(--success); }
+        .filter-chip.aged.active { background: var(--success); border-color: var(--success); }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+            background: #E5E3DF;
+            overflow: hidden;
+        }
+
+        .map-view {
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px);
+            background-size: 40px 40px;
+            position: relative;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            z-index: 100;
+        }
+
+        .map-button {
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .map-button:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: white;
+            padding: 1.25rem;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+            z-index: 100;
+        }
+
+        .legend-title {
+            font-family: 'Fraunces', serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.85rem;
+            color: var(--primary);
+        }
+
+        .legend-items {
+            display: grid;
+            gap: 0.65rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 0.75rem;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .marker {
+            position: absolute;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+            font-size: 1rem;
+            animation: markerPulse 2s infinite;
+        }
+
+        @keyframes markerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .marker:hover {
+            transform: scale(1.25);
+            z-index: 50;
+        }
+
+        .marker.your-location {
+            background: var(--primary);
+            border: 3px solid white;
+        }
+
+        .marker.housing { background: var(--info); }
+        .marker.health { background: var(--red); }
+        .marker.legal { background: var(--purple); }
+        .marker.family { background: var(--accent); }
+        .marker.aged { background: var(--success); }
+
+        .heat-zone {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+
+        .heat-high {
+            background: radial-gradient(circle, var(--red) 0%, transparent 70%);
+        }
+
+        .heat-medium {
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+        }
+
+        .heat-low {
+            background: radial-gradient(circle, var(--success) 0%, transparent 70%);
+        }
+
+        .agency-popup {
+            position: absolute;
+            background: white;
+            padding: 1.35rem;
+            border-radius: 14px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+            width: 280px;
+            z-index: 200;
+            display: none;
+        }
+
+        .agency-popup.active {
+            display: block;
+            animation: popupSlide 0.3s ease;
+        }
+
+        @keyframes popupSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.85rem;
+        }
+
+        .popup-close {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0;
+            line-height: 1;
+        }
+
+        .popup-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1.15rem;
+            color: var(--primary);
+            margin-bottom: 0.35rem;
+            line-height: 1.3;
+        }
+
+        .popup-type {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.85rem;
+        }
+
+        .popup-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 0.8rem;
+        }
+
+        .info-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--background);
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .popup-services {
+            margin-bottom: 1.25rem;
+        }
+
+        .services-title {
+            font-weight: 700;
+            font-size: 0.8rem;
+            margin-bottom: 0.65rem;
+            color: var(--primary);
+        }
+
+        .service-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+
+        .service-tag {
+            background: var(--background);
+            padding: 0.35rem 0.65rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 0.65rem;
+        }
+
+        .popup-button {
+            flex: 1;
+            padding: 0.75rem 0.65rem;
+            border: none;
+            border-radius: 9px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .popup-button.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .popup-button.primary:hover {
+            background: var(--primary-light);
+        }
+
+        .popup-button.secondary {
+            background: var(--background);
+            color: var(--text);
+        }
+
+        .popup-button.secondary:hover {
+            background: var(--border);
+        }
+
+        .ai-recommendations {
+            background: linear-gradient(135deg, #6B9AC4 0%, #5A8AB3 100%);
+            padding: 1.25rem 1.5rem;
+            color: white;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.65rem;
+        }
+
+        .ai-header h3 {
+            font-family: 'Fraunces', serif;
+            font-size: 1.1rem;
+        }
+
+        .ai-badge {
+            background: rgba(255,255,255,0.3);
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+
+        .ai-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.95;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .recommendation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 180px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .recommendation-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .recommendation-list::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .recommendation-list::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+        }
+
+        .recommendation-card {
+            background: rgba(255,255,255,0.15);
+            padding: 0.9rem;
+            border-radius: 11px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .recommendation-card:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateX(3px);
+        }
+
+        .rec-org {
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+            font-size: 0.9rem;
+        }
+
+        .rec-match {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            margin-bottom: 0.4rem;
+        }
+
+        .rec-reason {
+            font-size: 0.75rem;
+            opacity: 0.95;
+            line-height: 1.4;
+        }
+
+        .bottom-tabs {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            justify-content: space-around;
+            flex-shrink: 0;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+        }
+
+        .tab-icon {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Service Network</h1>
+            <p class="header-subtitle">Community agencies & collaboration opportunities</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Filters -->
+            <div class="filters-section">
+                <div class="filter-title">Filter by Category</div>
+                <div class="filter-chips">
+                    <div class="filter-chip active" data-category="all">All</div>
+                    <div class="filter-chip housing" data-category="housing">Housing</div>
+                    <div class="filter-chip health" data-category="health">Health</div>
+                    <div class="filter-chip legal" data-category="legal">Legal</div>
+                    <div class="filter-chip family" data-category="family">Family</div>
+                    <div class="filter-chip aged" data-category="aged">Aged Care</div>
+                </div>
+            </div>
+
+            <!-- AI Recommendations -->
+            <div class="ai-recommendations">
+                <div class="ai-header">
+                    <h3>🤖 AI Recommendations</h3>
+                    <span class="ai-badge">SMART</span>
+                </div>
+                <p class="ai-subtitle">Top collaboration matches for your services</p>
+
+                <div class="recommendation-list">
+                    <div class="recommendation-card" onclick="focusAgency('redfern-legal')">
+                        <div class="rec-org">Redfern Legal Centre</div>
+                        <div class="rec-match">⭐ 92% Match Score</div>
+                        <div class="rec-reason">Housing advocacy complements your Drop-in Hub. Combined outreach could support 120+ clients.</div>
+                    </div>
+
+                    <div class="recommendation-card" onclick="focusAgency('seslhd')">
+                        <div class="rec-org">SESLHD Mental Health</div>
+                        <div class="rec-match">⭐ 88% Match Score</div>
+                        <div class="rec-reason">On-site counseling during One Stop Shop. Gap analysis shows 200+ beneficiaries.</div>
+                    </div>
+
+                    <div class="recommendation-card" onclick="focusAgency('anglicare')">
+                        <div class="rec-org">Anglicare Marrickville</div>
+                        <div class="rec-match">⭐ 85% Match Score</div>
+                        <div class="rec-reason">Family programs align with your Peer Bridge initiative. Shared resources benefit 80+ families.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <div class="map-container">
+                <div class="map-view" id="mapView">
+                    <!-- Heat zones -->
+                    <div class="heat-zone heat-high" style="width: 350px; height: 350px; top: 35%; left: 42%;"></div>
+                    <div class="heat-zone heat-medium" style="width: 280px; height: 280px; top: 22%; left: 28%;"></div>
+                    <div class="heat-zone heat-medium" style="width: 250px; height: 250px; top: 52%; left: 58%;"></div>
+                    <div class="heat-zone heat-low" style="width: 200px; height: 200px; top: 62%; left: 22%;"></div>
+
+                    <!-- Your location marker -->
+                    <div class="marker your-location" style="top: 50%; left: 50%;" title="Newtown Neighbourhood Centre">
+                        🏢
+                    </div>
+
+                    <!-- Agency markers -->
+                    <div class="marker legal" style="top: 42%; left: 53%;" onclick="showPopup('redfern-legal', event)" title="Redfern Legal Centre">
+                        ⚖️
+                    </div>
+
+                    <div class="marker health" style="top: 48%; left: 55%;" onclick="showPopup('seslhd', event)" title="SESLHD Mental Health">
+                        🏥
+                    </div>
+
+                    <div class="marker family" style="top: 58%; left: 60%;" onclick="showPopup('anglicare', event)" title="Anglicare Marrickville">
+                        👨‍👩‍👧
+                    </div>
+
+                    <div class="marker legal" style="top: 52%; left: 58%;" onclick="showPopup('marrickville-legal', event)" title="Marrickville Legal Centre">
+                        📋
+                    </div>
+
+                    <div class="marker housing" style="top: 38%; left: 42%;" onclick="showPopup('haymarket', event)" title="Haymarket Foundation">
+                        🏠
+                    </div>
+
+                    <div class="marker aged" style="top: 55%; left: 48%;" onclick="showPopup('aged-care', event)" title="Inner West Aged Care">
+                        👵
+                    </div>
+
+                    <div class="marker health" style="top: 63%; left: 54%;" onclick="showPopup('rpa', event)" title="RPA Hospital">
+                        🏥
+                    </div>
+
+                    <div class="marker family" style="top: 58%; left: 52%;" onclick="showPopup('pcyc', event)" title="PCYC Marrickville">
+                        🏃
+                    </div>
+
+                    <div class="marker housing" style="top: 34%; left: 48%;" title="Housing NSW">
+                        🏘️
+                    </div>
+
+                    <div class="marker health" style="top: 44%; left: 40%;" title="Community Health Centre">
+                        ⚕️
+                    </div>
+
+                    <div class="marker legal" style="top: 66%; left: 46%;" title="Inner West Legal Aid">
+                        📜
+                    </div>
+
+                    <div class="marker family" style="top: 30%; left: 54%;" title="Family Services">
+                        👶
+                    </div>
+
+                    <!-- Map controls -->
+                    <div class="map-controls">
+                        <button class="map-button" title="Zoom In">+</button>
+                        <button class="map-button" title="Zoom Out">−</button>
+                        <button class="map-button" title="Center">⊙</button>
+                        <button class="map-button" title="Heat">🔥</button>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="map-legend">
+                        <div class="legend-title">Categories</div>
+                        <div class="legend-items">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--primary);"></div>
+                                <span>Your Location</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--info);"></div>
+                                <span>Housing</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--red);"></div>
+                                <span>Health</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--purple);"></div>
+                                <span>Legal</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent);"></div>
+                                <span>Family</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--success);"></div>
+                                <span>Aged Care</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agency Popup -->
+                    <div class="agency-popup" id="agencyPopup">
+                        <div class="popup-header">
+                            <div>
+                                <h3 class="popup-title" id="popupTitle">Redfern Legal Centre</h3>
+                                <p class="popup-type" id="popupType">Legal Aid • Housing Advocacy</p>
+                            </div>
+                            <button class="popup-close" onclick="closePopup()">×</button>
+                        </div>
+
+                        <div class="popup-info">
+                            <div class="info-row">
+                                <div class="info-icon">📍</div>
+                                <span id="popupAddress">73 Pitt St, Redfern NSW 2016</span>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-icon">📞</div>
+                                <span id="popupPhone">(02) 9698 7277</span>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-icon">⏰</div>
+                                <span id="popupHours">Mon-Fri 9:00 AM - 5:00 PM</span>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-icon">🚶</div>
+                                <span id="popupDistance">1.2 km • 3 min walk</span>
+                            </div>
+                        </div>
+
+                        <div class="popup-services">
+                            <div class="services-title">Services Offered</div>
+                            <div class="service-tags" id="popupServices">
+                                <span class="service-tag">Tenancy Advice</span>
+                                <span class="service-tag">Housing Rights</span>
+                                <span class="service-tag">Eviction Support</span>
+                                <span class="service-tag">Legal Aid</span>
+                            </div>
+                        </div>
+
+                        <div class="popup-actions">
+                            <button class="popup-button primary">📧 Contact</button>
+                            <button class="popup-button secondary">ℹ️ Info</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Tabs -->
+            <div class="bottom-tabs">
+                <button class="tab-button">
+                    <span class="tab-icon">📊</span>
+                    <span>Impact</span>
+                </button>
+                <button class="tab-button active">
+                    <span class="tab-icon">🗺️</span>
+                    <span>Map</span>
+                </button>
+                <button class="tab-button">
+                    <span class="tab-icon">🏠</span>
+                    <span>Home</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const agencies = {
+            'redfern-legal': {
+                name: 'Redfern Legal Centre',
+                type: 'Legal Aid • Housing Advocacy',
+                address: '73 Pitt St, Redfern NSW 2016',
+                phone: '(02) 9698 7277',
+                hours: 'Mon-Fri 9:00 AM - 5:00 PM',
+                distance: '1.2 km • 3 min walk',
+                services: ['Tenancy Advice', 'Housing Rights', 'Eviction Support', 'Legal Aid']
+            },
+            'seslhd': {
+                name: 'SESLHD Mental Health',
+                type: 'Mental Health Services',
+                address: '117 Missenden Rd, Camperdown',
+                phone: '(02) 9515 9600',
+                hours: 'Mon-Fri 8:30 AM - 5:00 PM',
+                distance: '0.8 km • 2 min walk',
+                services: ['Crisis Support', 'Counseling', 'Psychiatric Care', 'Case Management']
+            },
+            'anglicare': {
+                name: 'Anglicare Marrickville',
+                type: 'Family Support • Parenting',
+                address: '1 Sloane St, Summer Hill',
+                phone: '(02) 9798 1400',
+                hours: 'Mon-Fri 9:00 AM - 5:00 PM',
+                distance: '2.1 km • 5 min walk',
+                services: ['Parenting Groups', 'Family Support', 'Youth Programs', 'Financial Aid']
+            },
+            'marrickville-legal': {
+                name: 'Marrickville Legal Centre',
+                type: 'Legal Aid • Tenant Advocacy',
+                address: '338 Illawarra Rd, Marrickville',
+                phone: '(02) 9559 2899',
+                hours: 'Tue-Thu 10:00 AM - 4:00 PM',
+                distance: '1.5 km • 4 min walk',
+                services: ['Legal Advice', 'Tenant Rights', 'Debt Issues', 'Discrimination']
+            },
+            'haymarket': {
+                name: 'Haymarket Foundation',
+                type: 'Housing • Emergency Support',
+                address: '187 Thomas St, Haymarket',
+                phone: '(02) 9281 1752',
+                hours: 'Mon-Fri 9:00 AM - 5:00 PM',
+                distance: '3.2 km • 8 min walk',
+                services: ['Crisis Accommodation', 'Case Work', 'Material Aid', 'Referrals']
+            },
+            'aged-care': {
+                name: 'Inner West Aged Care',
+                type: 'Seniors Support • Home Care',
+                address: '45 Norton St, Leichhardt',
+                phone: '(02) 9560 1888',
+                hours: 'Mon-Fri 8:00 AM - 6:00 PM',
+                distance: '1.8 km • 4 min walk',
+                services: ['Home Care', 'Social Groups', 'Meals Program', 'Transport']
+            },
+            'rpa': {
+                name: 'RPA Hospital Social Work',
+                type: 'Hospital • Case Management',
+                address: '50 Missenden Rd, Camperdown',
+                phone: '(02) 9515 6111',
+                hours: 'Mon-Fri 8:00 AM - 4:00 PM',
+                distance: '2.4 km • 6 min walk',
+                services: ['Discharge Planning', 'Financial Support', 'Housing Referrals', 'Crisis']
+            },
+            'pcyc': {
+                name: 'PCYC Marrickville',
+                type: 'Youth • Recreation',
+                address: '171 Unwins Bridge Rd, Sydenham',
+                phone: '(02) 9519 6011',
+                hours: 'Mon-Fri 3:00 PM - 9:00 PM',
+                distance: '1.9 km • 5 min walk',
+                services: ['Youth Activities', 'Sports', 'Mentoring', 'Holiday Programs']
+            }
+        };
+
+        function showPopup(agencyId, event) {
+            const popup = document.getElementById('agencyPopup');
+            const agency = agencies[agencyId];
+            if (!agency) return;
+
+            document.getElementById('popupTitle').textContent = agency.name;
+            document.getElementById('popupType').textContent = agency.type;
+            document.getElementById('popupAddress').textContent = agency.address;
+            document.getElementById('popupPhone').textContent = agency.phone;
+            document.getElementById('popupHours').textContent = agency.hours;
+            document.getElementById('popupDistance').textContent = agency.distance;
+
+            const servicesContainer = document.getElementById('popupServices');
+            servicesContainer.innerHTML = '';
+            agency.services.forEach(service => {
+                const tag = document.createElement('span');
+                tag.className = 'service-tag';
+                tag.textContent = service;
+                servicesContainer.appendChild(tag);
+            });
+
+            const rect = event.target.getBoundingClientRect();
+            const container = document.querySelector('.screen-container').getBoundingClientRect();
+            popup.style.left = Math.min(rect.left - container.left + 40, container.width - 300) + 'px';
+            popup.style.top = Math.max(rect.top - container.top - 80, 10) + 'px';
+
+            popup.classList.add('active');
+        }
+
+        function closePopup() {
+            document.getElementById('agencyPopup').classList.remove('active');
+        }
+
+        function focusAgency(agencyId) {
+            alert('Focusing on ' + agencies[agencyId].name);
+        }
+
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        document.addEventListener('click', function(event) {
+            const popup = document.getElementById('agencyPopup');
+            if (!event.target.closest('.marker') && 
+                !event.target.closest('.agency-popup') &&
+                !event.target.closest('.recommendation-card')) {
+                popup.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
